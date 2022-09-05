@@ -1,0 +1,29 @@
+// MFCApplication1.idl : MFCApplication1.exe에 대한 형식 라이브러리 소스
+
+// 이 파일은 MIDL 컴파일러에 의해 처리되어
+// 형식 라이브러리(MFCApplication1.tlb)를 생성합니다.
+
+[ uuid(BA582A55-81BC-43D1-93A9-80D4804DE2DC), version(1.0) ]
+library MFCApplication1
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	//  CMFCApplication1Doc의 기본 디스패치 인터페이스
+	
+	[ uuid(532B9FE7-0853-4881-B6A5-71804C928A81) ]
+	dispinterface IMFCApplication1
+	{
+		properties:
+			
+		methods:
+	};
+
+	//  CMFCApplication1Doc의 클래스 정보
+	
+	[ uuid(D5B328BF-2DCA-42D6-831D-0637CD0BC4EA) ]
+	coclass MFCApplication1
+	{
+		[default] dispinterface IMFCApplication1;
+	};
+};
