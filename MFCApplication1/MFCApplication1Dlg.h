@@ -53,5 +53,6 @@ public:
 	afx_msg void OnBnClickedButton3();
 	CListCtrl m_ListFileName;
 	CListCtrl m_ListMD5;
+	void FindSubDir(CString strDir, CStringArray &FileArray);
 	afx_msg void OnBnClickedButton4();
 };

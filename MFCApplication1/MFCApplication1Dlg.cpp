@@ -350,30 +350,67 @@ void CMFCApplication1Dlg::OnBnClickedButton3()
 
 void CMFCApplication1Dlg::OnBnClickedButton4()
 {
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+	//// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 
-	static TCHAR BASED_CODE szFilter[] = _T("실행 파일(*.exe) | *.exe;|모든파일(*.*)|*.*||");
+	//static TCHAR BASED_CODE szFilter[] = _T("실행 파일(*.exe) | *.exe;|모든파일(*.*)|*.*||");
 
-	CFileDialog dlg(TRUE, _T("*.xlsx"), _T("exe"), OFN_HIDEREADONLY|OFN_ALLOWMULTISELECT, szFilter);
+	//CFileDialog dlg(TRUE, _T("*.xlsx"), _T("exe"), OFN_HIDEREADONLY|OFN_ALLOWMULTISELECT, szFilter);
 
-	if (IDOK == dlg.DoModal())
+	//if (IDOK == dlg.DoModal())
 
+	//{
+	//	for (auto pos = dlg.GetStartPosition(); pos != NULL;)
+	//	{
+	//		
+	//		CString str = dlg.GetNextPathName(pos);
+	//		CString str1 = dlg.GetFolderPath();
+
+	//		str.Delete(0, str1.GetLength()+1);
+	//		exFilePath += str;
+	//		//exFilePath.Remove(dlg.GetFolderPath);
+	//		
+	//	}
+
+	//	//exFilePath = dlg.GetFileName();
+
+	//	MessageBox(exFilePath);
+
+	//}
+	CStringArray FileArray;
+	CString strInitPath = _T("C:\\");
+
+	// 폴더 선택 다이얼로그
+	CFolderPickerDialog Picker(strInitPath, OFN_FILEMUSTEXIST, NULL, 0);
+	if (Picker.DoModal() == IDOK)
 	{
-		for (auto pos = dlg.GetStartPosition(); pos != NULL;)
-		{
-			
-			CString str = dlg.GetNextPathName(pos);
-			CString str1 = dlg.GetFolderPath();
+		// 선택된 폴더 경로얻음
+		CString strFolderPath = Picker.GetPathName();
 
-			str.Delete(0, str1.GetLength()+1);
-			exFilePath += str;
-			//exFilePath.Remove(dlg.GetFolderPath);
-			
-		}
+		FindSubDir(strFolderPath, FileArray);
 
-		//exFilePath = dlg.GetFileName();
+	}
+	for (int i = 0; i < FileArray.GetSize(); i++)
+	{
+		AfxMessageBox(FileArray.GetAt(i));
+	}
 
-		MessageBox(exFilePath);
+}
 
+void CMFCApplication1Dlg::FindSubDir(CString strDir, CStringArray &FileArray)
+{
+	strDir += _T("\\*.*");
+
+	CFileFind ff;
+	BOOL bFound = ff.FindFile(strDir);
+
+	while (bFound)
+	{
+		bFound = ff.FindNextFile();
+
+		if (ff.IsDots()) continue; //찾은 파일의 이름에 실제로 디렉터리임을 나타내는 "." 또는 ".."라는 이름이 있는지 확인합니다.
+		if (ff.IsDirectory()) // 찾은 파일이 디렉터리인지 확인합니다.
+			FindSubDir(ff.GetFilePath(), FileArray);
+		else
+			FileArray.Add(ff.GetFileName());
 	}
 }
