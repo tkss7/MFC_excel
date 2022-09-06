@@ -317,20 +317,20 @@ void CMFCApplication1Dlg::OnBnClickedButton1()
 
 void CMFCApplication1Dlg::OnBnClickedButton2()
 {
-	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	
-	static TCHAR BASED_CODE szFilter[] = _T("엑셀 파일(*.xls, *.xlsx) | *.xls;*.xlsx;|모든파일(*.*)|*.*||");
+// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 
-	CFileDialog dlg(TRUE, _T("*.xlsx"), _T("excel"), OFN_HIDEREADONLY, szFilter);
+static TCHAR BASED_CODE szFilter[] = _T("엑셀 파일(*.xls, *.xlsx) | *.xls;*.xlsx;|모든파일(*.*)|*.*||");
 
-	if (IDOK == dlg.DoModal())
+CFileDialog dlg(TRUE, _T("*.xlsx"), _T("excel"), OFN_HIDEREADONLY, szFilter);
 
-	{
-		exFilePath = dlg.GetPathName();
+if (IDOK == dlg.DoModal())
 
-		MessageBox(exFilePath);
+{
+	exFilePath = dlg.GetPathName();
 
-	}
+	MessageBox(exFilePath);
+
+}
 
 }
 
@@ -402,6 +402,7 @@ void CMFCApplication1Dlg::FindSubDir(CString strDir, CStringArray &FileArray)
 
 	CFileFind ff;
 	BOOL bFound = ff.FindFile(strDir);
+	CString strtmp;
 
 	while (bFound)
 	{
@@ -409,8 +410,17 @@ void CMFCApplication1Dlg::FindSubDir(CString strDir, CStringArray &FileArray)
 
 		if (ff.IsDots()) continue; //찾은 파일의 이름에 실제로 디렉터리임을 나타내는 "." 또는 ".."라는 이름이 있는지 확인합니다.
 		if (ff.IsDirectory()) // 찾은 파일이 디렉터리인지 확인합니다.
+		{
 			FindSubDir(ff.GetFilePath(), FileArray);
+
+		}
 		else
-			FileArray.Add(ff.GetFileName());
+		{
+			if (((ff.GetFileName()).Find(_T(".exe")) > -1)|| ((ff.GetFileName()).Find(_T(".dll")) > -1)) // Find함수 = 못찾으면 -1 반환
+			{
+				FileArray.Add(ff.GetFileName());
+			}
+
+		}
 	}
 }
