@@ -22,6 +22,12 @@
 
 #include <afxdisp.h>        // MFC 자동화 클래스입니다.
 
+///////////////////////////////
+#include <vector> 
+#include <thread>
+#include <algorithm>
+using namespace std;
+////////////////////////////////
 
 
 #ifndef _AFX_NO_OLE_SUPPORT

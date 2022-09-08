@@ -198,6 +198,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CApplication.h" />
+    <ClInclude Include="CmpareMD5Dlg.h" />
     <ClInclude Include="CRange.h" />
     <ClInclude Include="CWorkbook.h" />
     <ClInclude Include="CWorkbooks.h" />
@@ -213,6 +214,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CmpareMD5Dlg.cpp" />
     <ClCompile Include="DlgProxy.cpp" />
     <ClCompile Include="MD5Checksum.cpp" />
     <ClCompile Include="MFCApplication1.cpp" />

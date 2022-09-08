@@ -4,6 +4,14 @@
 
 #pragma once
 #include "afxcmn.h"
+#include "afxwin.h"
+
+
+struct _FILEDATA {    // 구조체 정의
+	CString strFolderName;
+	CString strFileName;
+}typedef FILEDATA;
+
 
 class CMFCApplication1DlgAutoProxy;
 
@@ -51,8 +59,19 @@ public:
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedButton2();
 	afx_msg void OnBnClickedButton3();
-	CListCtrl m_ListFileName;
-	CListCtrl m_ListMD5;
-	void FindSubDir(CString strDir, CStringArray &FileArray);
+	//CListCtrl m_ListFileName;
+	CListCtrl m_lstView;
+	//void FindSubDir(CString strDir, CStringArray &FileArray);
+	void FindSubDir(CString strDir, vector<FILEDATA> &FileArray);
 	afx_msg void OnBnClickedButton4();
+	CString m_StrfilePath;
+	CEdit m_EditFilePath;
+	vector<FILEDATA> FileArray;
+	INT iFocus;
+	afx_msg void OnEnUpdateEdit3();
+	afx_msg void OnEnChangeEdit3();
+	//static BOOL compare(const FILEDATA &a, const FILEDATA &b);
+	afx_msg void OnBnClickedButton5();
+	afx_msg void OnNMSetfocusAfter(NMHDR *pNMHDR, LRESULT *pResult);
 };
+
