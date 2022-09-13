@@ -106,6 +106,7 @@ BEGIN_MESSAGE_MAP(CMFCApplication1Dlg, CDialogEx)
 	ON_EN_CHANGE(IDC_EDIT3, &CMFCApplication1Dlg::OnEnChangeEdit3)
 	ON_BN_CLICKED(IDC_BUTTON5, &CMFCApplication1Dlg::OnBnClickedButton5)
 	ON_NOTIFY(NM_SETFOCUS, IDC_AFTER, &CMFCApplication1Dlg::OnNMSetfocusAfter)
+	ON_NOTIFY(NM_CUSTOMDRAW, IDC_AFTER, OnCustomdrawList)
 END_MESSAGE_MAP()
 
 
@@ -251,18 +252,30 @@ BOOL CMFCApplication1Dlg::CanExit()
 }
 
 //static BOOL CMFCApplication1Dlg::compare(const FILEDATA &a, const FILEDATA &b)
-static BOOL compare(const FILEDATA &a, const FILEDATA &b)
+//static BOOL compare(const FILEDATA &a, const FILEDATA &b)
+//{
+//
+//	if (a.strFolderName == b.strFolderName)
+//	//if(a.strFolderName.Compare(b.strFolderName)!=0)
+//	{
+//		return a.strFileName < b.strFileName;
+//	}
+//	else
+//		return a.strFolderName < b.strFolderName;
+//
+//}
+
+static BOOL compare(const CString &a, const CString &b)
 {
 
-	if (a.strFolderName == b.strFolderName)
-	//if(a.strFolderName.Compare(b.strFolderName)!=0)
+	if (a < b)
+		//if(a.strFolderName.Compare(b.strFolderName)!=0)
 	{
-		return a.strFileName < b.strFileName;
+		return TRUE;
 	}
-	else
-		return a.strFolderName < b.strFolderName;
 
 }
+
 
 CString md5gen(CString input) 
 { BYTE rgbHash[16];
@@ -329,22 +342,61 @@ void CMFCApplication1Dlg::OnBnClickedButton1()
 
 
 }
+int GetFindCharCount(CString msg, char find_char)
+{
+	int msg_len = msg.GetLength();
+	int find_cnt = 0;
 
+	for (int i = 0; i<msg_len; i++)
+	{
+		if (msg[i] == find_char)
+		{
+			find_cnt++;
+		}
+	}
+	return find_cnt;
+}
 
 void CMFCApplication1Dlg::OnBnClickedButton2()
 {
 // TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 
-static TCHAR BASED_CODE szFilter[] = _T("엑셀 파일(*.xls, *.xlsx) | *.xls;*.xlsx;|모든파일(*.*)|*.*||");
- 
-CFileDialog dlg(TRUE, _T("*.xlsx"), _T("excel"), OFN_HIDEREADONLY, szFilter);
+//static TCHAR BASED_CODE szFilter[] = _T("엑셀 파일(*.xls, *.xlsx) | *.xls;*.xlsx;|모든파일(*.*)|*.*||");
+// 
+//CFileDialog dlg(TRUE, _T("*.xlsx"), _T("excel"), OFN_HIDEREADONLY, szFilter);
+//
+//if (IDOK == dlg.DoModal())
+//
+//{
+//	exFilePath = dlg.GetPathName();
+//	//MessageBox(exFilePath);
+//}
+	
+	m_lstView.DeleteItem(iFocus);
+	
+	if(!FileArray.empty())
+		FileArray.erase(FileArray.begin() + iFocus);
 
-if (IDOK == dlg.DoModal())
+	if(!vstrMD5.empty())
+		vstrMD5.erase(vstrMD5.begin() + iFocus);
 
-{
-	exFilePath = dlg.GetPathName();
-	MessageBox(exFilePath);
-}
+
+	//CString strtmp2, strtmp3;
+
+	//for (int i = 0; i < FileArray.size(); i++)
+	//{
+	//	int sepCount = GetFindCharCount(FileArray[i], _T('\\'));   // " , " 의 갯수를 세어온다.
+
+	//	AfxExtractSubString(strtmp2, FileArray[i], sepCount - 1, _T('\\'));
+	//	AfxExtractSubString(strtmp3, FileArray[i], sepCount, _T('\\'));
+
+	//AfxMessageBox(strtmp2);
+	//AfxMessageBox(strtmp3);
+	//}
+
+
+
+
 
 }
 
@@ -355,14 +407,15 @@ void CMFCApplication1Dlg::OnBnClickedButton3()
 	//char *pszInput = "test";
 	//CString pszInput2 = _T("Test");
 
-	vector<CString> strMD5;
+	
 
-	CString strCheckSum;
+	//CString strCheckSum;
 
 	for (int i = 0; i < FileArray.size(); i++)
 	{
-		strMD5.emplace_back(md5gen(FileArray[i].strFileName));
-		m_lstView.SetItemText(i, 1, strMD5[i]);
+		vstrMD5.emplace_back(CMD5Checksum::GetMD5(FileArray[i]));
+		//strMD5.emplace_back(md5gen(FileArray[i].strFileName));
+		m_lstView.SetItemText(i, 1, vstrMD5[i]);
 
 	}
 
@@ -380,37 +433,48 @@ void CMFCApplication1Dlg::OnBnClickedButton4()
 
 	// 폴더 선택 다이얼로그
 	CFolderPickerDialog Picker(strInitPath, OFN_FILEMUSTEXIST, NULL, 0);
+
 	if (Picker.DoModal() == IDOK)
 	{
 		// 선택된 폴더 경로얻음
-		CString strFolderPath = Picker.GetPathName();
+		if (strFolderPath == Picker.GetPathName())
+			return;
+
+		strFolderPath = Picker.GetPathName();
 		m_EditFilePath.SetWindowTextW(strFolderPath);
 		OnEnUpdateEdit3();
 		FindSubDir(strFolderPath, FileArray);
 		m_lstView.DeleteAllItems();
 
+		sort(FileArray.begin(), FileArray.end(), compare);
+
+
+
+		for (int i = 0; i < FileArray.size(); i++)
+		{
+			m_lstView.InsertItem(i, FileArray[i]);
+			//m_lstView.SetItemText(i, 1, FileArray[i].strFolderName);
+
+			//AfxMessageBox(FileArray[i].strFileName + FileArray[i].strFolderName);
+		}
+		if (!vstrMD5.empty())
+		{
+			for (int i = 0; i < vstrMD5.size(); i++)
+			{
+				m_lstView.SetItemText(i, 1, vstrMD5[i]);
+
+			}
+		}
+
 	}
 
-	sort(FileArray.begin(), FileArray.end(), compare);
 
 
-
-	for (int i = 0; i < FileArray.size(); i++)
-	{
-		m_lstView.InsertItem(i, FileArray[i].strFileName);
-		//m_lstView.SetItemText(i, 1, FileArray[i].strFolderName);
-
-		//AfxMessageBox(FileArray[i].strFileName + FileArray[i].strFolderName);
-	}   
-	for (auto i : FileArray)
-	{
-		AfxMessageBox((i.strFileName));
-	}
 
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void CMFCApplication1Dlg::FindSubDir(CString strDir, vector<FILEDATA> &FileArray)
+void CMFCApplication1Dlg::FindSubDir(CString strDir, vector<CString> &FileArray)
 {
 	strDir += _T("\\*.*");
 
@@ -418,7 +482,7 @@ void CMFCApplication1Dlg::FindSubDir(CString strDir, vector<FILEDATA> &FileArray
 	BOOL bFound = ff.FindFile(strDir);
 	CString strtmp;
 
-	FILEDATA tmpfile;
+	//FILEDATA tmpfile;
 
 	while (bFound)
 	{
@@ -435,15 +499,15 @@ void CMFCApplication1Dlg::FindSubDir(CString strDir, vector<FILEDATA> &FileArray
 			if (((ff.GetFileName()).Find(_T(".exe")) > -1) || ((ff.GetFileName()).Find(_T(".dll")) > -1)) // Find함수 = 못찾으면 -1 반환
 			{
 
-				//FileArray.push_back(ff.GetFileName());
-				strtmp = ff.GetRoot();
-				strtmp.Delete(strtmp.GetLength() - 1);
-				//FileArray.push_back(strtmp);
-				strtmp = strtmp.Right(strtmp.GetLength() - strtmp.ReverseFind('\\') - 1);
+				////FileArray.push_back(ff.GetFileName());
+				//strtmp = ff.GetRoot();
+				//strtmp.Delete(strtmp.GetLength() - 1);
+				////FileArray.push_back(strtmp);
+				//strtmp = strtmp.Right(strtmp.GetLength() - strtmp.ReverseFind('\\') - 1);
 
-				tmpfile.strFileName = ff.GetFileName();
-				tmpfile.strFolderName = strtmp;
-				FileArray.push_back(tmpfile);
+				//tmpfile.strFileName = ff.GetFileName();
+				//tmpfile.strFolderName = strtmp;
+				FileArray.push_back(ff.GetFilePath());
 			}
 
 		}
@@ -487,15 +551,15 @@ void CMFCApplication1Dlg::OnBnClickedButton5()
 
 	CString strCmpMD5;
 	CCmpareMD5Dlg dlg(strCmpMD5);
-	if (dlg.DoModal() == IDOK)
+	if (dlg.DoModal() == IDOK)  
 	{
 		//dlg.m_strCmpMD5;
 		//SetDlgItemText(IDC_EDIT1, strCmpMD5);
 		m_lstView.SetItemText(iFocus, 2, dlg.m_strCmpMD5);
+		//m_lstView.SetItemText(3, 2, CMD5Checksum::GetMD5(xx));
 
 	}
 }
-
 
 void CMFCApplication1Dlg::OnNMSetfocusAfter(NMHDR *pNMHDR, LRESULT *pResult)
 {
@@ -504,4 +568,76 @@ void CMFCApplication1Dlg::OnNMSetfocusAfter(NMHDR *pNMHDR, LRESULT *pResult)
 
 
 	*pResult = 0;
+}
+
+void CMFCApplication1Dlg::OnCustomdrawList(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	//LPNMCUSTOMDRAW pNMCD = reinterpret_cast<LPNMCUSTOMDRAW>(pNMHDR);
+	//// TODO: Add your control notification handler code here
+	//if (pNMCD->dwDrawStage == CDDS_PREPAINT) {
+	//	*pResult = (LRESULT)CDRF_NOTIFYITEMDRAW;
+	//	return; // 여기서 함수를 빠져 나가야 *pResult 값이 유지된다.
+	//}
+
+	//if (pNMCD->dwDrawStage == CDDS_ITEMPREPAINT) {
+
+	//	// 한 줄 (row) 가 그려질 때. 여기서만 설정하면 한 줄이 모두 동일하게 설정이 된다.
+	//	if (m_lstView.GetItemData(pNMCD->dwItemSpec) == 0) {//dwItemSpec 이 현재 그려지는 row index
+	//		NMLVCUSTOMDRAW *pDraw = (NMLVCUSTOMDRAW*)(pNMHDR);
+	//		pDraw->clrText = 0xffffff;
+	//		pDraw->clrTextBk = 0x0;
+	//		//*pResult = (LRESULT)CDRF_NEWFONT;//여기서 나가면 sub-item 이 변경되지 않는다.
+	//		*pResult = (LRESULT)CDRF_NOTIFYSUBITEMDRAW;//sub-item 을 변경하기 위해서. 
+	//		return;//여기서 중단해야 *pResult 값이 유지된다.
+	//	}
+	//	else { // When all matrices are already made. 
+	//		NMLVCUSTOMDRAW *pDraw = (NMLVCUSTOMDRAW*)(pNMHDR);
+	//		pDraw->clrText = 0x0;
+	//		pDraw->clrTextBk = RGB(255, 255, 196);
+	//		*pResult = (LRESULT)CDRF_NEWFONT;
+	//		return;
+	//	}
+	//}
+	//else if (pNMCD->dwDrawStage == (CDDS_SUBITEM | CDDS_ITEMPREPAINT)) {
+	//	// sub-item 이 그려지는 순간. 위에서 *pResult 에 CDRF_NOTIFYSUBITEMDRAW 를 해서 여기로
+
+	//	// 올 수 있었던 것이다.
+
+	//	NMLVCUSTOMDRAW *pDraw = (NMLVCUSTOMDRAW*)(pNMHDR);
+	//	CString text = m_lstView.GetItemText(pNMCD->dwItemSpec, pDraw->iSubItem);
+	//	if (text == _T("x")) {
+	//		pDraw->clrText = 0xff;
+	//		pDraw->clrTextBk = 0xf0fff0;
+	//	}
+	//	else {
+	//		pDraw->clrText = 0x0;
+	//		pDraw->clrTextBk = 0xffffff;
+	//	}
+
+	//	*pResult = (LRESULT)CDRF_NEWFONT; // 이렇게 해야 설정한 대로 그려진다.
+	//	return;
+	//}
+
+	NMLVCUSTOMDRAW* pLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
+	*pResult = 0;
+
+	if (CDDS_PREPAINT == pLVCD->nmcd.dwDrawStage) //페인팅주기가 시작되기 전에
+	{
+		*pResult = CDRF_NOTIFYITEMDRAW;
+	}
+	else if (CDDS_ITEMPREPAINT == pLVCD->nmcd.dwDrawStage) // 항목이 그려지기 전에
+	{
+		if (pLVCD->nmcd.dwItemSpec == iFocus)
+		{
+			pLVCD->clrText = RGB(0, 0, 0);
+			pLVCD->clrTextBk = RGB(219, 239, 252);
+		}
+		else
+		{
+			pLVCD->clrText = RGB(0, 0, 0);
+			pLVCD->clrTextBk = RGB(255, 255, 255);
+		}
+
+		*pResult = CDRF_DODEFAULT;
+	}
 }

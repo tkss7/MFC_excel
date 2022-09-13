@@ -62,16 +62,20 @@ public:
 	//CListCtrl m_ListFileName;
 	CListCtrl m_lstView;
 	//void FindSubDir(CString strDir, CStringArray &FileArray);
-	void FindSubDir(CString strDir, vector<FILEDATA> &FileArray);
+	void FindSubDir(CString strDir, vector<CString> &FileArray); //
 	afx_msg void OnBnClickedButton4();
 	CString m_StrfilePath;
 	CEdit m_EditFilePath;
-	vector<FILEDATA> FileArray;
-	INT iFocus;
+	vector<CString> FileArray; //
+	vector<CString> vstrMD5;
+	INT iFocus; //
+	CString xx;
+	CString strFolderPath;
 	afx_msg void OnEnUpdateEdit3();
 	afx_msg void OnEnChangeEdit3();
 	//static BOOL compare(const FILEDATA &a, const FILEDATA &b);
 	afx_msg void OnBnClickedButton5();
 	afx_msg void OnNMSetfocusAfter(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnCustomdrawList(NMHDR* pNMHDR, LRESULT* pResult);
 };
 
