@@ -144,7 +144,7 @@ BOOL CMFCApplication1Dlg::OnInitDialog()
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
 
 	CRect rect;
-	m_lstView.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES /*LVS_EX_CHECKBOXES*/);
+	m_lstView.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_DOUBLEBUFFER /*LVS_EX_CHECKBOXES*/); //더블버퍼링 적용
 
 	CRect r;
 	::GetClientRect(m_lstView.m_hWnd, r);
@@ -496,8 +496,8 @@ void CMFCApplication1Dlg::FindSubDir(CString strDir, vector<CString> &FileArray)
 		}
 		else
 		{
-			if (((ff.GetFileName()).Find(_T(".exe")) > -1) || ((ff.GetFileName()).Find(_T(".dll")) > -1)) // Find함수 = 못찾으면 -1 반환
-			{
+			//if (((ff.GetFileName()).Find(_T(".exe")) > -1) || ((ff.GetFileName()).Find(_T(".dll")) > -1)) // Find함수 = 못찾으면 -1 반환
+			//{
 
 				////FileArray.push_back(ff.GetFileName());
 				//strtmp = ff.GetRoot();
@@ -508,7 +508,7 @@ void CMFCApplication1Dlg::FindSubDir(CString strDir, vector<CString> &FileArray)
 				//tmpfile.strFileName = ff.GetFileName();
 				//tmpfile.strFolderName = strtmp;
 				FileArray.push_back(ff.GetFilePath());
-			}
+			//}
 
 		}
 	}
@@ -549,22 +549,23 @@ void CMFCApplication1Dlg::OnBnClickedButton5()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 
-	CString strCmpMD5;
+	strCmpMD5;
 	CCmpareMD5Dlg dlg(strCmpMD5);
 	if (dlg.DoModal() == IDOK)  
 	{
+		iFocus = m_lstView.GetSelectionMark();
 		//dlg.m_strCmpMD5;
 		//SetDlgItemText(IDC_EDIT1, strCmpMD5);
 		m_lstView.SetItemText(iFocus, 2, dlg.m_strCmpMD5);
 		//m_lstView.SetItemText(3, 2, CMD5Checksum::GetMD5(xx));
-
+		Invalidate(FALSE);
 	}
 }
 
 void CMFCApplication1Dlg::OnNMSetfocusAfter(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
-	iFocus = m_lstView.GetSelectionMark();
+	//iFocus = m_lstView.GetSelectionMark();
 
 
 	*pResult = 0;
@@ -572,72 +573,75 @@ void CMFCApplication1Dlg::OnNMSetfocusAfter(NMHDR *pNMHDR, LRESULT *pResult)
 
 void CMFCApplication1Dlg::OnCustomdrawList(NMHDR *pNMHDR, LRESULT *pResult)
 {
-	//LPNMCUSTOMDRAW pNMCD = reinterpret_cast<LPNMCUSTOMDRAW>(pNMHDR);
-	//// TODO: Add your control notification handler code here
-	//if (pNMCD->dwDrawStage == CDDS_PREPAINT) {
+	NMLVCUSTOMDRAW* pNMCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
+	// TODO: Add your control notification handler code here
+
+
+	if (pNMCD->nmcd.dwDrawStage == CDDS_PREPAINT) {
+		*pResult = (LRESULT)CDRF_NOTIFYITEMDRAW;
+		return; // 여기서 함수를 빠져 나가야 *pResult 값이 유지된다.
+	}
+	//int nSub = (int)pNMCD->iSubItem;
+
+	//if (pNMCD->nmcd.dwDrawStage == CDDS_ITEMPOSTPAINT)
+	//{
 	//	*pResult = (LRESULT)CDRF_NOTIFYITEMDRAW;
-	//	return; // 여기서 함수를 빠져 나가야 *pResult 값이 유지된다.
+	//	return;
 	//}
+	//RGB(219, 239, 252); 하늘색
+	if (pNMCD->nmcd.dwDrawStage == CDDS_ITEMPREPAINT) {
 
-	//if (pNMCD->dwDrawStage == CDDS_ITEMPREPAINT) {
+		// 한 줄 (row) 가 그려질 때. 여기서만 설정하면 한 줄이 모두 동일하게 설정이 된다.
+		int nRow = pNMCD->nmcd.dwItemSpec;
 
-	//	// 한 줄 (row) 가 그려질 때. 여기서만 설정하면 한 줄이 모두 동일하게 설정이 된다.
-	//	if (m_lstView.GetItemData(pNMCD->dwItemSpec) == 0) {//dwItemSpec 이 현재 그려지는 row index
-	//		NMLVCUSTOMDRAW *pDraw = (NMLVCUSTOMDRAW*)(pNMHDR);
-	//		pDraw->clrText = 0xffffff;
-	//		pDraw->clrTextBk = 0x0;
-	//		//*pResult = (LRESULT)CDRF_NEWFONT;//여기서 나가면 sub-item 이 변경되지 않는다.
-	//		*pResult = (LRESULT)CDRF_NOTIFYSUBITEMDRAW;//sub-item 을 변경하기 위해서. 
-	//		return;//여기서 중단해야 *pResult 값이 유지된다.
-	//	}
-	//	else { // When all matrices are already made. 
-	//		NMLVCUSTOMDRAW *pDraw = (NMLVCUSTOMDRAW*)(pNMHDR);
-	//		pDraw->clrText = 0x0;
-	//		pDraw->clrTextBk = RGB(255, 255, 196);
-	//		*pResult = (LRESULT)CDRF_NEWFONT;
-	//		return;
-	//	}
-	//}
-	//else if (pNMCD->dwDrawStage == (CDDS_SUBITEM | CDDS_ITEMPREPAINT)) {
+		if (m_lstView.GetItemText(nRow, 2).IsEmpty())
+			return;
+		CString text = m_lstView.GetItemText(nRow, 1);
+		if (text.CompareNoCase(m_lstView.GetItemText(nRow, 2))){
+			pNMCD->clrText = RGB(0, 0, 0);
+			
+			pNMCD->clrTextBk = RGB(219, 239, 100);
+			*pResult = (LRESULT)CDRF_NEWFONT;//여기서 나가면 sub-item 이 변경되지 않는다.
+			//*pResult = (LRESULT)CDRF_NOTIFYSUBITEMDRAW;//sub-item 을 변경하기 위해서. 
+			return;//여기서 중단해야 *pResult 값이 유지된다.
+		}
+		else { // When all matrices are already made. 
+			pNMCD->clrText = RGB(255, 255, 255);
+			pNMCD->clrTextBk = RGB(219, 68, 85);
+			*pResult = (LRESULT)CDRF_NEWFONT;
+			return;
+		}
+
+	}
+	
+
+	//else if (pNMCD->nmcd.dwDrawStage == (CDDS_SUBITEM | CDDS_ITEMPREPAINT)) {
 	//	// sub-item 이 그려지는 순간. 위에서 *pResult 에 CDRF_NOTIFYSUBITEMDRAW 를 해서 여기로
 
 	//	// 올 수 있었던 것이다.
+	//	// 한 줄 (row) 가 그려질 때. 여기서만 설정하면 한 줄이 모두 동일하게 설정이 된다.
+	//	//if (m_lstView.GetItemData(pNMCD->dwItemSpec) == 0) {//dwItemSpec 이 현재 그려지는 row index
+	//	if (m_lstView.GetItemText(pNMCD->nmcd.dwItemSpec, 2).IsEmpty())
+	//		return;
+	//	CString text = m_lstView.GetItemText(pNMCD->nmcd.dwItemSpec, 1);
+	//	if (text == m_lstView.GetItemText(pNMCD->nmcd.dwItemSpec, 2)&& nSub==0) {
 
-	//	NMLVCUSTOMDRAW *pDraw = (NMLVCUSTOMDRAW*)(pNMHDR);
-	//	CString text = m_lstView.GetItemText(pNMCD->dwItemSpec, pDraw->iSubItem);
-	//	if (text == _T("x")) {
-	//		pDraw->clrText = 0xff;
-	//		pDraw->clrTextBk = 0xf0fff0;
-	//	}
-	//	else {
-	//		pDraw->clrText = 0x0;
-	//		pDraw->clrTextBk = 0xffffff;
-	//	}
+	//		pNMCD->clrText = RGB(0, 0, 0);
 
-	//	*pResult = (LRESULT)CDRF_NEWFONT; // 이렇게 해야 설정한 대로 그려진다.
-	//	return;
+	//		pNMCD->clrTextBk = RGB(219, 239, 252);
+	//		*pResult = (LRESULT)CDRF_NEWFONT;//여기서 나가면 sub-item 이 변경되지 않는다.
+	//										 //*pResult = (LRESULT)CDRF_NOTIFYSUBITEMDRAW;//sub-item 을 변경하기 위해서. 
+	//		return;//여기서 중단해야 *pResult 값이 유지된다.
+	//	}
+	//	else { // When all matrices are already made. 
+	//		pNMCD->clrText = 0x0;
+	//		pNMCD->clrTextBk = RGB(219, 239, 100);
+	//		*pResult = (LRESULT)CDRF_NEWFONT;
+	//		//*pResult = (LRESULT)CDRF_NOTIFYSUBITEMDRAW;
+	//		return;
+	//	}
+	
 	//}
 
-	NMLVCUSTOMDRAW* pLVCD = reinterpret_cast<NMLVCUSTOMDRAW*>(pNMHDR);
-	*pResult = 0;
-
-	if (CDDS_PREPAINT == pLVCD->nmcd.dwDrawStage) //페인팅주기가 시작되기 전에
-	{
-		*pResult = CDRF_NOTIFYITEMDRAW;
-	}
-	else if (CDDS_ITEMPREPAINT == pLVCD->nmcd.dwDrawStage) // 항목이 그려지기 전에
-	{
-		if (pLVCD->nmcd.dwItemSpec == iFocus)
-		{
-			pLVCD->clrText = RGB(0, 0, 0);
-			pLVCD->clrTextBk = RGB(219, 239, 252);
-		}
-		else
-		{
-			pLVCD->clrText = RGB(0, 0, 0);
-			pLVCD->clrTextBk = RGB(255, 255, 255);
-		}
-
-		*pResult = CDRF_DODEFAULT;
-	}
+	
 }

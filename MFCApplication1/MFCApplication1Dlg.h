@@ -70,6 +70,7 @@ public:
 	vector<CString> vstrMD5;
 	INT iFocus; //
 	CString xx;
+	CString strCmpMD5; // 
 	CString strFolderPath;
 	afx_msg void OnEnUpdateEdit3();
 	afx_msg void OnEnChangeEdit3();
