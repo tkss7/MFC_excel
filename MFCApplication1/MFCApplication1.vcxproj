@@ -91,7 +91,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -204,6 +204,7 @@
     <ClInclude Include="CWorkbooks.h" />
     <ClInclude Include="CWorksheet.h" />
     <ClInclude Include="CWorksheets.h" />
+    <ClInclude Include="DataLoad.h" />
     <ClInclude Include="DlgProxy.h" />
     <ClInclude Include="MD5Checksum.h" />
     <ClInclude Include="MD5ChecksumDefines.h" />
@@ -215,6 +216,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CmpareMD5Dlg.cpp" />
+    <ClCompile Include="DataLoad.cpp" />
     <ClCompile Include="DlgProxy.cpp" />
     <ClCompile Include="MD5Checksum.cpp" />
     <ClCompile Include="MFCApplication1.cpp" />
@@ -237,7 +239,9 @@
     <ResourceCompile Include="MFCApplication1.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\icon1.ico" />
     <Image Include="res\MFCApplication1.ico" />
+    <Image Include="res\로고.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -70,6 +70,7 @@ Ltd.) and provided that the RSA Data Security notices are complied with.
 #include "stdafx.h"
 #include "MD5Checksum.h"
 #include "MD5ChecksumDefines.h"
+#include "Wincrypt.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -162,6 +163,31 @@ CString CMD5Checksum::GetMD5(BYTE* pBuf, UINT nLength)
 	CMD5Checksum MD5Checksum;
 	MD5Checksum.Update( pBuf, nLength );
 	return MD5Checksum.Final();
+}
+
+CString CMD5Checksum::GetMD5S(CString& input)
+{
+	BYTE rgbHash[16];
+	BYTE *data;	int data_len;
+	DWORD cbHash;	CString ret;
+	CStringA str;	HCRYPTPROV hCryptProv;
+	HCRYPTHASH hHash;
+
+	str = input;
+	data = (BYTE *)str.GetString();
+	data_len = str.GetLength();
+	CryptAcquireContext(&hCryptProv, NULL, NULL, PROV_RSA_FULL, 0);
+
+	CryptCreateHash(hCryptProv, CALG_MD5, 0, 0, &hHash);
+	CryptHashData(hHash, (const BYTE *)data, data_len, 0);
+	CryptGetHashParam(hHash, HP_HASHVAL, rgbHash, &cbHash, 0);
+
+	for (DWORD i = 0; i < cbHash; i++)
+		ret.AppendFormat(_T("%02x"), rgbHash[i]);	CryptDestroyHash(hHash);
+
+	CryptReleaseContext(hCryptProv, 0);
+
+	return ret;
 }
 
 

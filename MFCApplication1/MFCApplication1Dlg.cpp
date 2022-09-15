@@ -3,10 +3,13 @@
 //
 
 #include "stdafx.h"
+//#include "DataLoad.h"
+
 #include "MFCApplication1.h"
 #include "MFCApplication1Dlg.h"
 #include "DlgProxy.h"
 #include "afxdialogex.h"
+
 
 #include "CApplication.h"
 #include "CRange.h"
@@ -19,7 +22,6 @@
 #include "MD5Checksum.h"
 #include "CmpareMD5Dlg.h"
 
-#include <Wincrypt.h>
 
 
 
@@ -71,7 +73,7 @@ CMFCApplication1Dlg::CMFCApplication1Dlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(IDD_MFCAPPLICATION1_DIALOG, pParent)
 	, m_StrfilePath(_T("C:\\visual studio project\\MFCApplication1"))
 {
-	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
+	m_hIcon = AfxGetApp()->LoadIcon(IDI_ICON_ROGO/*IDR_MAINFRAME*/);
 	m_pAutoProxy = NULL;
 }
 
@@ -142,6 +144,8 @@ BOOL CMFCApplication1Dlg::OnInitDialog()
 	SetIcon(m_hIcon, FALSE);		// 작은 아이콘을 설정합니다.
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
+
+	//CDataLoad Dload;
 
 	CRect rect;
 	m_lstView.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_DOUBLEBUFFER /*LVS_EX_CHECKBOXES*/); //더블버퍼링 적용
@@ -277,24 +281,6 @@ static BOOL compare(const CString &a, const CString &b)
 }
 
 
-CString md5gen(CString input) 
-{ BYTE rgbHash[16];
-	BYTE *data;	int data_len;
-	DWORD cbHash;	CString ret;
-	CStringA str;	HCRYPTPROV hCryptProv;
-	HCRYPTHASH hHash;
-	str = input;
-	data = (BYTE *)str.GetString();
-	data_len = str.GetLength();
-	CryptAcquireContext(&hCryptProv, NULL, NULL, PROV_RSA_FULL, 0);
-	CryptCreateHash(hCryptProv, CALG_MD5, 0, 0, &hHash);
-	CryptHashData(hHash, (const BYTE *)data, data_len, 0);
-	CryptGetHashParam(hHash, HP_HASHVAL, rgbHash, &cbHash, 0);
-	for (DWORD i = 0; i < cbHash; i++)			ret.AppendFormat(_T("%02x"), rgbHash[i]);	CryptDestroyHash(hHash);
-	CryptReleaseContext(hCryptProv, 0);
-	return ret;
-}
-
 void CMFCApplication1Dlg::OnBnClickedButton1()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
@@ -374,18 +360,19 @@ void CMFCApplication1Dlg::OnBnClickedButton2()
 	
 	m_lstView.DeleteItem(iFocus);
 	
+	//////////////////////////////////////////////// 두 벡터를 CProduct 에 넣을 것이라면 묶어서 erase 메서드 구현?
 	if(!FileArray.empty())
 		FileArray.erase(FileArray.begin() + iFocus);
 
 	if(!vstrMD5.empty())
 		vstrMD5.erase(vstrMD5.begin() + iFocus);
-
+	////////////////////////////////////////////////
 
 	//CString strtmp2, strtmp3;
 
 	//for (int i = 0; i < FileArray.size(); i++)
 	//{
-	//	int sepCount = GetFindCharCount(FileArray[i], _T('\\'));   // " , " 의 갯수를 세어온다.
+	//	int sepCount = GetFindCharCount(FileArray[i], _T('\\'));   // " , " 의 갯수를 세어온다. //데이터부분 메소드?
 
 	//	AfxExtractSubString(strtmp2, FileArray[i], sepCount - 1, _T('\\'));
 	//	AfxExtractSubString(strtmp3, FileArray[i], sepCount, _T('\\'));
@@ -432,18 +419,18 @@ void CMFCApplication1Dlg::OnBnClickedButton4()
 	CString strInitPath = _T("C:\\");
 
 	// 폴더 선택 다이얼로그
-	CFolderPickerDialog Picker(strInitPath, OFN_FILEMUSTEXIST, NULL, 0);
+	CFolderPickerDialog Picker(strInitPath, OFN_FILEMUSTEXIST , NULL, 0);
 
 	if (Picker.DoModal() == IDOK)
 	{
 		// 선택된 폴더 경로얻음
-		if (strFolderPath == Picker.GetPathName())
+		if (Dload.GetPath() == Picker.GetPathName())
 			return;
 
-		strFolderPath = Picker.GetPathName();
-		m_EditFilePath.SetWindowTextW(strFolderPath);
+		Dload.SetPath(Picker.GetPathName());
+		m_EditFilePath.SetWindowTextW(Dload.GetPath());
 		OnEnUpdateEdit3();
-		FindSubDir(strFolderPath, FileArray);
+		Dload.FindSubDir(FileArray);
 		m_lstView.DeleteAllItems();
 
 		sort(FileArray.begin(), FileArray.end(), compare);
@@ -453,9 +440,6 @@ void CMFCApplication1Dlg::OnBnClickedButton4()
 		for (int i = 0; i < FileArray.size(); i++)
 		{
 			m_lstView.InsertItem(i, FileArray[i]);
-			//m_lstView.SetItemText(i, 1, FileArray[i].strFolderName);
-
-			//AfxMessageBox(FileArray[i].strFileName + FileArray[i].strFolderName);
 		}
 		if (!vstrMD5.empty())
 		{
@@ -562,7 +546,7 @@ void CMFCApplication1Dlg::OnBnClickedButton5()
 	}
 }
 
-void CMFCApplication1Dlg::OnNMSetfocusAfter(NMHDR *pNMHDR, LRESULT *pResult)
+void CMFCApplication1Dlg::OnNMSetfocusAfter(NMHDR *pNMHDR, LRESULT *pResult)   // 없어도 ㄱㅊ
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	//iFocus = m_lstView.GetSelectionMark();
@@ -581,13 +565,7 @@ void CMFCApplication1Dlg::OnCustomdrawList(NMHDR *pNMHDR, LRESULT *pResult)
 		*pResult = (LRESULT)CDRF_NOTIFYITEMDRAW;
 		return; // 여기서 함수를 빠져 나가야 *pResult 값이 유지된다.
 	}
-	//int nSub = (int)pNMCD->iSubItem;
 
-	//if (pNMCD->nmcd.dwDrawStage == CDDS_ITEMPOSTPAINT)
-	//{
-	//	*pResult = (LRESULT)CDRF_NOTIFYITEMDRAW;
-	//	return;
-	//}
 	//RGB(219, 239, 252); 하늘색
 	if (pNMCD->nmcd.dwDrawStage == CDDS_ITEMPREPAINT) {
 
@@ -598,16 +576,17 @@ void CMFCApplication1Dlg::OnCustomdrawList(NMHDR *pNMHDR, LRESULT *pResult)
 			return;
 		CString text = m_lstView.GetItemText(nRow, 1);
 		if (text.CompareNoCase(m_lstView.GetItemText(nRow, 2))){
-			pNMCD->clrText = RGB(0, 0, 0);
-			
-			pNMCD->clrTextBk = RGB(219, 239, 100);
+			pNMCD->clrText = RGB(255, 255, 255);
+			pNMCD->clrTextBk = RGB(219, 68, 85);
 			*pResult = (LRESULT)CDRF_NEWFONT;//여기서 나가면 sub-item 이 변경되지 않는다.
 			//*pResult = (LRESULT)CDRF_NOTIFYSUBITEMDRAW;//sub-item 을 변경하기 위해서. 
 			return;//여기서 중단해야 *pResult 값이 유지된다.
 		}
 		else { // When all matrices are already made. 
-			pNMCD->clrText = RGB(255, 255, 255);
-			pNMCD->clrTextBk = RGB(219, 68, 85);
+
+			pNMCD->clrText = RGB(0, 0, 0);
+
+			pNMCD->clrTextBk = RGB(219, 239, 100);
 			*pResult = (LRESULT)CDRF_NEWFONT;
 			return;
 		}

@@ -305,6 +305,7 @@ public:
 	static CString GetMD5(BYTE* pBuf, UINT nLength);
 	static CString GetMD5(CFile& File);
 	static CString GetMD5(const CString& strFilePath);
+	static CString GetMD5S(CString& input);
 
 protected:
 	//constructor/destructor

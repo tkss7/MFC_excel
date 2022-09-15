@@ -5,12 +5,12 @@
 #pragma once
 #include "afxcmn.h"
 #include "afxwin.h"
-
-
-struct _FILEDATA {    // 구조체 정의
-	CString strFolderName;
-	CString strFileName;
-}typedef FILEDATA;
+#include "DataLoad.h"
+//
+//struct _FILEDATA {    // 구조체 정의
+//	CString strFolderName;
+//	CString strFileName;
+//}typedef FILEDATA;
 
 
 class CMFCApplication1DlgAutoProxy;
@@ -43,7 +43,7 @@ protected:
 
 	BOOL CanExit();
 
-	CString exFilePath;
+	CString exFilePath; // 엑셀 자동화에 사용
 
 
 	// 생성된 메시지 맵 함수
@@ -56,27 +56,29 @@ protected:
 	virtual void OnCancel();
 	DECLARE_MESSAGE_MAP()
 public:
+
+	CDataLoad Dload;
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedButton2();
 	afx_msg void OnBnClickedButton3();
 	//CListCtrl m_ListFileName;
-	CListCtrl m_lstView;
+	CListCtrl m_lstView; // 리스트컨트롤
 	//void FindSubDir(CString strDir, CStringArray &FileArray);
 	void FindSubDir(CString strDir, vector<CString> &FileArray); //
 	afx_msg void OnBnClickedButton4();
-	CString m_StrfilePath;
-	CEdit m_EditFilePath;
-	vector<CString> FileArray; //
-	vector<CString> vstrMD5;
-	INT iFocus; //
-	CString xx;
-	CString strCmpMD5; // 
-	CString strFolderPath;
+	CString m_StrfilePath; // 기본 파일경로값 ( 필수적 X)
+	CEdit m_EditFilePath; // 파일경로 나타내는 edit
+	vector<CString> FileArray; // 파일전체경로 담는 벡터
+	vector<CString> vstrMD5; //MD5코드 담는 벡터
+	INT iFocus; // 리스트컨트롤 에서 현재 포커스 잡혀있는 인덱스 담는 정수
+	CString strCmpMD5; //  비교할 MD5 담을 변수
+	CString strFolderPath; // 리스트 컨트롤에 표시할 파일경로 담는 변수
+
+
 	afx_msg void OnEnUpdateEdit3();
 	afx_msg void OnEnChangeEdit3();
-	//static BOOL compare(const FILEDATA &a, const FILEDATA &b);
 	afx_msg void OnBnClickedButton5();
-	afx_msg void OnNMSetfocusAfter(NMHDR *pNMHDR, LRESULT *pResult);
-	afx_msg void OnCustomdrawList(NMHDR* pNMHDR, LRESULT* pResult);
+	afx_msg void OnNMSetfocusAfter(NMHDR *pNMHDR, LRESULT *pResult); // 필요 X
+	afx_msg void OnCustomdrawList(NMHDR* pNMHDR, LRESULT* pResult); // 사용자정의 함수
 };
 

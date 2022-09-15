@@ -63,6 +63,9 @@
     <ClInclude Include="CmpareMD5Dlg.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="DataLoad.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCApplication1.cpp">
@@ -81,6 +84,9 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="CmpareMD5Dlg.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="DataLoad.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
@@ -102,6 +108,12 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\MFCApplication1.ico">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\icon1.ico">
+      <Filter>리소스 파일</Filter>
+    </Image>
+    <Image Include="res\로고.ico">
       <Filter>리소스 파일</Filter>
     </Image>
   </ItemGroup>
