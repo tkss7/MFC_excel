@@ -73,12 +73,18 @@ public:
 	INT iFocus; // 리스트컨트롤 에서 현재 포커스 잡혀있는 인덱스 담는 정수
 	CString strCmpMD5; //  비교할 MD5 담을 변수
 	CString strFolderPath; // 리스트 컨트롤에 표시할 파일경로 담는 변수
-
-
+	//BOOL ClipboardPaste(TCHAR * PasteData);
+	BOOL CopyStrToClipboard(CString strMessage);
 	afx_msg void OnEnUpdateEdit3();
 	afx_msg void OnEnChangeEdit3();
 	afx_msg void OnBnClickedButton5();
 	afx_msg void OnNMSetfocusAfter(NMHDR *pNMHDR, LRESULT *pResult); // 필요 X
 	afx_msg void OnCustomdrawList(NMHDR* pNMHDR, LRESULT* pResult); // 사용자정의 함수
+	afx_msg void OnContextMenu(CWnd* /*pWnd*/, CPoint /*point*/);
+	afx_msg void OnPopupCopyhash();
+	afx_msg void OnCopyfilename();
+	afx_msg void OnCopyfilepath();
+	afx_msg void OnNMClickAfter(NMHDR *pNMHDR, LRESULT *pResult);
+	afx_msg void OnNMRClickAfter(NMHDR *pNMHDR, LRESULT *pResult);
 };
 

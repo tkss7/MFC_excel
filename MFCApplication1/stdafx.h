@@ -26,6 +26,7 @@
 #include <vector> 
 #include <thread>
 #include <algorithm>
+#include <cstringt.h>
 using namespace std;
 ////////////////////////////////
 

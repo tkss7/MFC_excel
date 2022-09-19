@@ -109,6 +109,12 @@ BEGIN_MESSAGE_MAP(CMFCApplication1Dlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON5, &CMFCApplication1Dlg::OnBnClickedButton5)
 	ON_NOTIFY(NM_SETFOCUS, IDC_AFTER, &CMFCApplication1Dlg::OnNMSetfocusAfter)
 	ON_NOTIFY(NM_CUSTOMDRAW, IDC_AFTER, OnCustomdrawList)
+	ON_WM_CONTEXTMENU()
+	ON_COMMAND(ID_POPUP_COPYHASH, &CMFCApplication1Dlg::OnPopupCopyhash)
+	ON_COMMAND(ID_COPYFILENAME, &CMFCApplication1Dlg::OnCopyfilename)
+	ON_COMMAND(ID_COPYFILEPATH, &CMFCApplication1Dlg::OnCopyfilepath)
+	ON_NOTIFY(NM_CLICK, IDC_AFTER, &CMFCApplication1Dlg::OnNMClickAfter)
+	ON_NOTIFY(NM_RCLICK, IDC_AFTER, &CMFCApplication1Dlg::OnNMRClickAfter)
 END_MESSAGE_MAP()
 
 
@@ -145,8 +151,8 @@ BOOL CMFCApplication1Dlg::OnInitDialog()
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
 
-	//CDataLoad Dload;
-
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	CRect rect;
 	m_lstView.SetExtendedStyle(LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_DOUBLEBUFFER /*LVS_EX_CHECKBOXES*/); //더블버퍼링 적용
 
@@ -164,6 +170,8 @@ BOOL CMFCApplication1Dlg::OnInitDialog()
 	m_lstView.InsertColumn(2, _T("Compare Hash Code"), LVCFMT_LEFT, int(cx * 0.25));
 
 	iFocus = 0;
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -328,7 +336,7 @@ void CMFCApplication1Dlg::OnBnClickedButton1()
 
 
 }
-int GetFindCharCount(CString msg, char find_char)
+int GetFindCharCount(CString msg, TCHAR find_char)
 {
 	int msg_len = msg.GetLength();
 	int find_cnt = 0;
@@ -403,7 +411,6 @@ void CMFCApplication1Dlg::OnBnClickedButton3()
 		vstrMD5.emplace_back(CMD5Checksum::GetMD5(FileArray[i]));
 		//strMD5.emplace_back(md5gen(FileArray[i].strFileName));
 		m_lstView.SetItemText(i, 1, vstrMD5[i]);
-
 	}
 
 	//strCheckSum.MakeUpper();
@@ -428,9 +435,9 @@ void CMFCApplication1Dlg::OnBnClickedButton4()
 			return;
 
 		Dload.SetPath(Picker.GetPathName());
-		m_EditFilePath.SetWindowTextW(Dload.GetPath());
+		m_EditFilePath.SetWindowText(Dload.GetPath());
 		OnEnUpdateEdit3();
-		Dload.FindSubDir(FileArray);
+		Dload.FindSubDir(Dload.GetPath(),FileArray);
 		m_lstView.DeleteAllItems();
 
 		sort(FileArray.begin(), FileArray.end(), compare);
@@ -446,13 +453,19 @@ void CMFCApplication1Dlg::OnBnClickedButton4()
 			for (int i = 0; i < vstrMD5.size(); i++)
 			{
 				m_lstView.SetItemText(i, 1, vstrMD5[i]);
-
 			}
+		}
+
+		for (auto i : Dload.GetCategoryVec())
+		{
+			CString strtmp;
+			strtmp.Format(_T("%s : %d"), i.strCategoryName,i.iCategoryNum);
+			AfxMessageBox(strtmp);
 		}
 
 	}
 
-
+	
 
 
 
@@ -541,7 +554,6 @@ void CMFCApplication1Dlg::OnBnClickedButton5()
 		//dlg.m_strCmpMD5;
 		//SetDlgItemText(IDC_EDIT1, strCmpMD5);
 		m_lstView.SetItemText(iFocus, 2, dlg.m_strCmpMD5);
-		//m_lstView.SetItemText(3, 2, CMD5Checksum::GetMD5(xx));
 		Invalidate(FALSE);
 	}
 }
@@ -550,7 +562,8 @@ void CMFCApplication1Dlg::OnNMSetfocusAfter(NMHDR *pNMHDR, LRESULT *pResult)   /
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 	//iFocus = m_lstView.GetSelectionMark();
-
+	//iFocus = m_lstView.GetNextItem(-1, LVNI_SELECTED);
+	
 
 	*pResult = 0;
 }
@@ -623,4 +636,154 @@ void CMFCApplication1Dlg::OnCustomdrawList(NMHDR *pNMHDR, LRESULT *pResult)
 	//}
 
 	
+}
+
+void CMFCApplication1Dlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
+{
+	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
+	CMenu menu;
+	menu.LoadMenu(IDR_POPUP_MENU);
+	//menu.GetSubMenu(0);
+	CMenu * pMenu = menu.GetSubMenu(0);
+	// 메뉴를 추가합니다.
+
+
+	CListCtrl *pListCtrl;
+	pListCtrl = (CListCtrl*)GetDlgItem(IDC_AFTER);
+
+	CRect ListCtrlRect;
+	pListCtrl->GetWindowRect(&ListCtrlRect);
+
+	ASSERT(pMenu);
+
+	if (ListCtrlRect.PtInRect(point))
+	{
+		pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON,   // 컨텍스트 메뉴를 x,y 좌표에 출력합니다. 
+			point.x,
+			point.y,
+			this /*AfxGetMainWnd()*/);
+	}
+
+
+	
+}
+BOOL CMFCApplication1Dlg::CopyStrToClipboard(CString strMessage)
+{
+	if (!OpenClipboard())
+	{
+		AfxMessageBox(_T("Cannot open the Clipboard"));
+		return FALSE;
+	}
+
+
+
+	HGLOBAL hGlobal = GlobalAlloc(GHND | GMEM_SHARE/*| GMEM_DDESHARE | GMEM_MOVEABLE*/, (strMessage.GetLength() + 1) * sizeof(TCHAR));
+	if (!EmptyClipboard())
+	{
+		AfxMessageBox(_T("Cannot empty the Clipboard"));
+		return FALSE;
+	}
+
+
+	//LPSTR pGlobal = (LPSTR)GlobalLock(hGlobal);
+	LPTSTR pGlobal = (LPTSTR)(LPCTSTR)GlobalLock(hGlobal);
+	//LPTSTR strM = (LPTSTR)(LPCTSTR)strMessage;
+	LPCTSTR strM = (LPCTSTR)strMessage;
+	//lstrcpy(pGlobal, strM);
+	_tcscpy(pGlobal, strM);
+	GlobalUnlock(hGlobal);
+	
+	//if (::SetClipboardData(CF_TEXT, hGlobal) == NULL)
+	if (::SetClipboardData(CF_UNICODETEXT | CF_TEXT, hGlobal) == NULL)
+	{
+		AfxMessageBox(_T("Unable to set Clipboard data"));
+		CloseClipboard();
+		return FALSE;
+	}
+
+	//CString str;
+	//str.Format(_T("%d"), (strMessage.GetLength() + 1) * sizeof(TCHAR));
+	//AfxMessageBox(str);
+
+	CloseClipboard();
+
+	return TRUE;
+
+}
+
+void CMFCApplication1Dlg::OnPopupCopyhash()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+
+
+	CopyStrToClipboard(m_lstView.GetItemText(iFocus, 1));
+	
+}
+
+
+void CMFCApplication1Dlg::OnCopyfilename()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	CString strtmp = m_lstView.GetItemText(iFocus, 0);
+
+	strtmp = strtmp.Right(strtmp.GetLength() - strtmp.ReverseFind(_T('\\')) - 1);
+	
+
+	
+	CopyStrToClipboard(strtmp);
+}
+
+
+void CMFCApplication1Dlg::OnCopyfilepath()
+{
+	// TODO: 여기에 명령 처리기 코드를 추가합니다.
+	CopyStrToClipboard(m_lstView.GetItemText(iFocus, 0));
+}
+
+//BOOL CMFCApplication1Dlg::ClipboardPaste(TCHAR * PasteData)
+//{
+//	if (_tcslen(PasteData) > 0)
+//	{
+//		if (CopyStrToClipboard(PasteData))
+//		{
+//
+//			// Ctrl + V 키를 눌러준다.
+//			keybd_event(VK_CONTROL, MapVirtualKey(VK_CONTROL, 0), 0, 0);
+//			keybd_event(0x56, MapVirtualKey(0x56, 0), 0, 0);
+//			Sleep(100);
+//			keybd_event(0x56, MapVirtualKey(0x56, 0), KEYEVENTF_KEYUP, 0);
+//			keybd_event(VK_CONTROL, MapVirtualKey(VK_CONTROL, 0), KEYEVENTF_KEYUP, 0);
+//			Sleep(100);
+//			keybd_event(VK_TAB, MapVirtualKey(VK_TAB, 0), 0, 0);
+//			Sleep(50);
+//			keybd_event(VK_TAB, MapVirtualKey(VK_TAB, 0), KEYEVENTF_KEYUP, 0);
+//		}
+//		else return FALSE;
+//	}
+//	else return FALSE;
+//
+//	return TRUE;
+//}
+
+void CMFCApplication1Dlg::OnNMClickAfter(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+
+	//NM_LISTVIEW* pNMView = (NM_LISTVIEW*)pNMHDR;
+	//iFocus = pNMView->iItem;
+	iFocus = m_lstView.GetSelectionMark();
+	*pResult = 0;
+}
+
+
+void CMFCApplication1Dlg::OnNMRClickAfter(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
+
+	//NM_LISTVIEW* pNMView = (NM_LISTVIEW*)pNMHDR;
+	//iFocus = pNMView->iItem;
+	iFocus = m_lstView.GetSelectionMark();
+	*pResult = 0;
 }

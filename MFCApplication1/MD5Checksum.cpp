@@ -186,7 +186,7 @@ CString CMD5Checksum::GetMD5S(CString& input)
 		ret.AppendFormat(_T("%02x"), rgbHash[i]);	CryptDestroyHash(hHash);
 
 	CryptReleaseContext(hCryptProv, 0);
-
+	
 	return ret;
 }
 
