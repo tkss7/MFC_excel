@@ -17,12 +17,7 @@ CCmpareMD5Dlg::CCmpareMD5Dlg(CWnd* pParent /*=NULL*/)
 {
 
 }
-CCmpareMD5Dlg::CCmpareMD5Dlg(CString& strMD5, CWnd* pParent /*= NULL*/)
-	: CDialog(IDD_CMP_DIALOG, pParent)
-	, m_strCmpMD5(_T(""))
-{
-	strMD5 = m_strCmpMD5;
-}
+
 CCmpareMD5Dlg::~CCmpareMD5Dlg()
 {
 }
@@ -81,6 +76,6 @@ void CCmpareMD5Dlg::OnBnClickedOk()
 
 	GetDlgItemText(IDC_EDIT1, m_strCmpMD5);
 
-
+	
 	CDialog::OnOK();
 }

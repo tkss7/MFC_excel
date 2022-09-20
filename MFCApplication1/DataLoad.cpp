@@ -3,7 +3,7 @@
 //#include "afx.h"
 CDataLoad::CDataLoad()
 {
-	m_StrfilePath = _T("");
+	m_strFilePath = _T("");
 }
 
 
@@ -11,16 +11,17 @@ CDataLoad::~CDataLoad()
 {
 }
 
-VOID  CDataLoad::SetPath(CString& str) { m_StrfilePath = str; }
+VOID  CDataLoad::SetPath(CString& str) { m_strFilePath = str; }
 
-CString CDataLoad::GetPath() { return m_StrfilePath; }
+CString CDataLoad::GetPath() { return m_strFilePath; }
 
-VOID CDataLoad::FindSubDir(CString str, vector<CString> &FileArray)
+
+void CDataLoad::FindSubDir(CString str, CProduct & product)  // 하위경로 모든파일 찾아 벡터에 저장
 {
-	if (str.GetBuffer() == NULL)
-		str = m_StrfilePath;
+	//if (str.GetBuffer() == NULL)
+	//	str = m_StrfilePath;
 
-	int count = 0;
+	int icount = 0;
 	CFileFind ff;
 	//m_StrfilePath += _T("\\*.*");
 	str += _T("\\*.*");
@@ -37,51 +38,56 @@ VOID CDataLoad::FindSubDir(CString str, vector<CString> &FileArray)
 		if (ff.IsDirectory()) // 찾은 파일이 디렉터리인지 확인합니다.
 		{
 			str = ff.GetFilePath();
-			FindSubDir(str, FileArray);
+			FindSubDir(str, product);
 
 		}
 		else
 		{
 			//if (((ff.GetFileName()).Find(_T(".exe")) > -1) || ((ff.GetFileName()).Find(_T(".dll")) > -1)) // Find함수 = 못찾으면 -1 반환
 			//{
-			FileArray.push_back(ff.GetFilePath());
-			count++;
+			product.m_vstrFilePath.push_back(ff.GetFilePath());
+			icount++;
 			//}
 		}
 	}
 
-	if (count)
+	if (icount)
 	{
 		CATEGORYCOUNT cate;
 		cate.strCategoryName = GetFoldNAame(ff.GetRoot());
-		cate.iCategoryNum = count;
+		cate.iCategoryNum = icount;
 
-		Category.push_back(cate);
+		product.m_vCategory.push_back(cate);
 	}
 
 	ff.Close();
 }
-  
-int CDataLoad::GetFindCharCount(TCHAR find_char)
-{
-	int msg_len = m_StrfilePath.GetLength();
-	int find_cnt = 0;
 
-	for (int i = 0; i<msg_len; i++)
+int CDataLoad::GetFindCharCount(CString &str, TCHAR find_char)
+{
+	int imsg_len = str.GetLength();
+	int ifind_cnt = 0;
+
+	for (int i = 0; i<imsg_len; i++)
 	{
-		if (m_StrfilePath[i] == find_char)
+		if (str[i] == find_char)
 		{
-			find_cnt++;
+			ifind_cnt++;
 		}
 	}
-	return find_cnt;
-
-	//	int sepCount = GetFindCharCount(FileArray[i], _T('\\'));   // " , " 의 갯수를 세어온다. //데이터부분 메소드?
-
-	//	AfxExtractSubString(strtmp2, FileArray[i], sepCount - 1, _T('\\'));
-	//	AfxExtractSubString(strtmp3, FileArray[i], sepCount, _T('\\'));
-
+	return ifind_cnt;
 }
+
+CString CDataLoad::ReverseSubPath(CString &str, int ilocation)
+{
+	CString strtmp;
+	int sepCount = GetFindCharCount(str, _T('\\'));   // " , " 의 갯수를 세어온다. //데이터부분 메소드?
+
+	AfxExtractSubString(strtmp, str, sepCount - ilocation, _T('\\'));
+
+	return strtmp;
+}
+
 
 //void CDataLoad::GetDirFilesNum()
 //{
@@ -122,12 +128,7 @@ int CDataLoad::GetFindCharCount(TCHAR find_char)
 //	return count;
 //}
 
-vector<CATEGORYCOUNT> CDataLoad::GetCategoryVec()
-{
 
-	//GetDirFilesNum();
-	return Category;
-}
 
 CString CDataLoad::GetFoldNAame(CString str)
 {
@@ -135,4 +136,14 @@ CString CDataLoad::GetFoldNAame(CString str)
 	str.Delete(str.GetLength() - 1);
 	str = str.Right(str.GetLength() - str.ReverseFind(_T('\\')) - 1);
 	return str;
+}
+
+CProduct::CProduct()
+{
+
+}
+
+CProduct::~CProduct()
+{
+
 }

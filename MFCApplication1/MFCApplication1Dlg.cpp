@@ -369,11 +369,11 @@ void CMFCApplication1Dlg::OnBnClickedButton2()
 	m_lstView.DeleteItem(iFocus);
 	
 	//////////////////////////////////////////////// 두 벡터를 CProduct 에 넣을 것이라면 묶어서 erase 메서드 구현?
-	if(!FileArray.empty())
-		FileArray.erase(FileArray.begin() + iFocus);
+	if(!product.m_vstrFilePath.empty())
+		product.m_vstrFilePath.erase(product.m_vstrFilePath.begin() + iFocus);
 
-	if(!vstrMD5.empty())
-		vstrMD5.erase(vstrMD5.begin() + iFocus);
+	if(!product.m_vstrMD5.empty())
+		product.m_vstrMD5.erase(product.m_vstrMD5.begin() + iFocus);
 	////////////////////////////////////////////////
 
 	//CString strtmp2, strtmp3;
@@ -406,12 +406,20 @@ void CMFCApplication1Dlg::OnBnClickedButton3()
 
 	//CString strCheckSum;
 
-	for (int i = 0; i < FileArray.size(); i++)
+	//for (int i = 0; i < FileArray.size(); i++)
+	//{
+	//	m_vstrMD5.emplace_back(CMD5Checksum::GetMD5(FileArray[i]));
+	//	//strMD5.emplace_back(md5gen(FileArray[i].strFileName));
+	//	m_lstView.SetItemText(i, 1, m_vstrMD5[i]);
+	//}
+
+	for (int i = 0; i < product.m_vstrFilePath.size(); i++)	
 	{
-		vstrMD5.emplace_back(CMD5Checksum::GetMD5(FileArray[i]));
+		product.m_vstrMD5.emplace_back(CMD5Checksum::GetMD5(product.m_vstrFilePath[i]));
 		//strMD5.emplace_back(md5gen(FileArray[i].strFileName));
-		m_lstView.SetItemText(i, 1, vstrMD5[i]);
+		m_lstView.SetItemText(i, 1, product.m_vstrMD5[i]);
 	}
+
 
 	//strCheckSum.MakeUpper();
 
@@ -437,37 +445,40 @@ void CMFCApplication1Dlg::OnBnClickedButton4()
 		Dload.SetPath(Picker.GetPathName());
 		m_EditFilePath.SetWindowText(Dload.GetPath());
 		OnEnUpdateEdit3();
-		Dload.FindSubDir(Dload.GetPath(),FileArray);
+		//Dload.FindSubDir(Dload.GetPath(), FileArray);
+		Dload.FindSubDir(Dload.GetPath(), product);
 		m_lstView.DeleteAllItems();
 
-		sort(FileArray.begin(), FileArray.end(), compare);
+		//sort(FileArray.begin(), FileArray.end(), compare);
+		sort(product.m_vstrFilePath.begin(), product.m_vstrFilePath.end(), compare);
 
 
 
-		for (int i = 0; i < FileArray.size(); i++)
+		//for (int i = 0; i < FileArray.size(); i++)
+		//{
+		//	m_lstView.InsertItem(i, FileArray[i]);
+		//}
+		for (int i = 0; i < product.m_vstrFilePath.size(); i++)
 		{
-			m_lstView.InsertItem(i, FileArray[i]);
+			m_lstView.InsertItem(i, product.m_vstrFilePath[i]);
 		}
-		if (!vstrMD5.empty())
+		if (!product.m_vstrMD5.empty())
 		{
-			for (int i = 0; i < vstrMD5.size(); i++)
+			for (int i = 0; i < product.m_vstrMD5.size(); i++)
 			{
-				m_lstView.SetItemText(i, 1, vstrMD5[i]);
+				m_lstView.SetItemText(i, 1, product.m_vstrMD5[i]);
 			}
 		}
 
-		for (auto i : Dload.GetCategoryVec())
-		{
-			CString strtmp;
-			strtmp.Format(_T("%s : %d"), i.strCategoryName,i.iCategoryNum);
-			AfxMessageBox(strtmp);
-		}
-
+		//for (auto i : product.m_vCategory)
+		//{
+		//	CString strtmp;
+		//	strtmp.Format(_T("%s : %d"), i.strCategoryName, i.iCategoryNum);
+		//	AfxMessageBox(strtmp);
+		//}
 	}
 
 	
-
-
 
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -546,13 +557,15 @@ void CMFCApplication1Dlg::OnBnClickedButton5()
 {
 	// TODO: 여기에 컨트롤 알림 처리기 코드를 추가합니다.
 
-	strCmpMD5;
-	CCmpareMD5Dlg dlg(strCmpMD5);
+	//strCmpMD5;
+	//CCmpareMD5Dlg dlg(strCmpMD5);
+	CCmpareMD5Dlg dlg;
 	if (dlg.DoModal() == IDOK)  
 	{
 		iFocus = m_lstView.GetSelectionMark();
 		//dlg.m_strCmpMD5;
 		//SetDlgItemText(IDC_EDIT1, strCmpMD5);
+		//m_lstView.SetItemText(iFocus, 2, dlg.m_strCmpMD5);
 		m_lstView.SetItemText(iFocus, 2, dlg.m_strCmpMD5);
 		Invalidate(FALSE);
 	}
@@ -651,15 +664,15 @@ void CMFCApplication1Dlg::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
 	CListCtrl *pListCtrl;
 	pListCtrl = (CListCtrl*)GetDlgItem(IDC_AFTER);
 
-	CRect ListCtrlRect;
-	pListCtrl->GetWindowRect(&ListCtrlRect);
+	CRect rcListCtrl;
+	pListCtrl->GetWindowRect(&rcListCtrl);
 
 	ASSERT(pMenu);
 
-	if (ListCtrlRect.PtInRect(point))
+	if (rcListCtrl.PtInRect(point))
 	{
 		pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON,   // 컨텍스트 메뉴를 x,y 좌표에 출력합니다. 
-			point.x,
+			point.x, 
 			point.y,
 			this /*AfxGetMainWnd()*/);
 	}
@@ -675,8 +688,6 @@ BOOL CMFCApplication1Dlg::CopyStrToClipboard(CString strMessage)
 		return FALSE;
 	}
 
-
-
 	HGLOBAL hGlobal = GlobalAlloc(GHND | GMEM_SHARE/*| GMEM_DDESHARE | GMEM_MOVEABLE*/, (strMessage.GetLength() + 1) * sizeof(TCHAR));
 	if (!EmptyClipboard())
 	{
@@ -684,10 +695,7 @@ BOOL CMFCApplication1Dlg::CopyStrToClipboard(CString strMessage)
 		return FALSE;
 	}
 
-
-	//LPSTR pGlobal = (LPSTR)GlobalLock(hGlobal);
 	LPTSTR pGlobal = (LPTSTR)(LPCTSTR)GlobalLock(hGlobal);
-	//LPTSTR strM = (LPTSTR)(LPCTSTR)strMessage;
 	LPCTSTR strM = (LPCTSTR)strMessage;
 	//lstrcpy(pGlobal, strM);
 	_tcscpy(pGlobal, strM);
@@ -701,10 +709,6 @@ BOOL CMFCApplication1Dlg::CopyStrToClipboard(CString strMessage)
 		return FALSE;
 	}
 
-	//CString str;
-	//str.Format(_T("%d"), (strMessage.GetLength() + 1) * sizeof(TCHAR));
-	//AfxMessageBox(str);
-
 	CloseClipboard();
 
 	return TRUE;
@@ -715,9 +719,7 @@ void CMFCApplication1Dlg::OnPopupCopyhash()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 
-
 	CopyStrToClipboard(m_lstView.GetItemText(iFocus, 1));
-	
 }
 
 
@@ -725,11 +727,9 @@ void CMFCApplication1Dlg::OnCopyfilename()
 {
 	// TODO: 여기에 명령 처리기 코드를 추가합니다.
 	CString strtmp = m_lstView.GetItemText(iFocus, 0);
-
 	strtmp = strtmp.Right(strtmp.GetLength() - strtmp.ReverseFind(_T('\\')) - 1);
 	
 
-	
 	CopyStrToClipboard(strtmp);
 }
 
@@ -772,7 +772,14 @@ void CMFCApplication1Dlg::OnNMClickAfter(NMHDR *pNMHDR, LRESULT *pResult)
 
 	//NM_LISTVIEW* pNMView = (NM_LISTVIEW*)pNMHDR;
 	//iFocus = pNMView->iItem;
+
+
+	if (m_lstView.GetSelectionMark() == -1)
+		return;
+
 	iFocus = m_lstView.GetSelectionMark();
+
+
 	*pResult = 0;
 }
 
@@ -784,6 +791,15 @@ void CMFCApplication1Dlg::OnNMRClickAfter(NMHDR *pNMHDR, LRESULT *pResult)
 
 	//NM_LISTVIEW* pNMView = (NM_LISTVIEW*)pNMHDR;
 	//iFocus = pNMView->iItem;
+
+	if (m_lstView.GetSelectionMark() == -1)
+		return;
+
 	iFocus = m_lstView.GetSelectionMark();
+
+	
+
+
+
 	*pResult = 0;
 }

@@ -9,7 +9,6 @@ class CCmpareMD5Dlg : public CDialog
 
 public:
 	CCmpareMD5Dlg(CWnd* pParent = NULL);   // 표준 생성자입니다.
-	CCmpareMD5Dlg(CString& strMD5, CWnd* pParent = NULL);   // 표준 생성자입니다.
 
 	virtual ~CCmpareMD5Dlg();
 
@@ -23,9 +22,11 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
+
+	CString m_strCmpMD5;
+
 	afx_msg void OnPaint();
 	virtual BOOL OnInitDialog();
-	CString m_strCmpMD5;
 	afx_msg void OnEnChangeEdit1();
 	afx_msg void OnBnClickedOk();
 };

@@ -57,6 +57,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 
+	CProduct product;
 	CDataLoad Dload;
 	afx_msg void OnBnClickedButton1();
 	afx_msg void OnBnClickedButton2();
@@ -68,10 +69,10 @@ public:
 	afx_msg void OnBnClickedButton4();
 	CString m_StrfilePath; // 기본 파일경로값 ( 필수적 X)
 	CEdit m_EditFilePath; // 파일경로 나타내는 edit
-	vector<CString> FileArray; // 파일전체경로 담는 벡터
-	vector<CString> vstrMD5; //MD5코드 담는 벡터
+	//vector<CString> FileArray; // 파일전체경로 담는 벡터
+	//vector<CString> m_vstrMD5; //MD5코드 담는 벡터
 	INT iFocus; // 리스트컨트롤 에서 현재 포커스 잡혀있는 인덱스 담는 정수
-	CString strCmpMD5; //  비교할 MD5 담을 변수
+	//CString strCmpMD5; //  비교할 MD5 담을 변수
 	CString strFolderPath; // 리스트 컨트롤에 표시할 파일경로 담는 변수
 	//BOOL ClipboardPaste(TCHAR * PasteData);
 	BOOL CopyStrToClipboard(CString strMessage);
